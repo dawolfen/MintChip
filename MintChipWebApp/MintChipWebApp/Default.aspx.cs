@@ -11,7 +11,6 @@ namespace MintChipWebApp
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            this should not HttpWorkerRequest!
         }
     }
 }
