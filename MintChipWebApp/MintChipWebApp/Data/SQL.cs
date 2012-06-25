@@ -62,6 +62,8 @@ namespace MintChipWebApp.Data
                         AddVarCharParameter("email", emailAddress, sqlCommand);
                         AddVarCharParameter("confirmationCode", confirmationCode, sqlCommand);
 
+                        sqlConnection.Open();
+
                         sqlCommand.ExecuteNonQuery();
                     }
                 }
