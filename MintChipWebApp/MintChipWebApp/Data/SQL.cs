@@ -33,6 +33,8 @@ namespace MintChipWebApp.Data
                     {
                         AddVarCharParameter("emailAddress", emailAddress, sqlCommand);
 
+                        sqlConnection.Open();
+
                         int count = (int)sqlCommand.ExecuteScalar();
                     }
                 }
@@ -73,6 +75,108 @@ namespace MintChipWebApp.Data
                 SQLLogger.LogException(ex);
             }
         }
+
+        #endregion
+
+        #region Confirm Account
+
+        public ConfirmAccountResult ConfirmAccount(string emailAddress, string confirmationCode)
+        {
+            if (string.IsNullOrEmpty(emailAddress))
+                return ConfirmAccountResult.NoSuchEmail;
+
+            if (string.IsNullOrEmpty(confirmationCode))
+                return ConfirmAccountResult.InvalidCode;
+
+            try
+            {
+                // find the row (if any) for this email address
+                using (SqlConnection sqlConnection = GetConnection())
+                {
+                    using (SqlCommand sqlCommand = new SqlCommand("SELECT * FROM Users WHERE [Email] = @email", sqlConnection))
+                    {
+                        AddVarCharParameter("email", emailAddress, sqlCommand);
+
+                        DataSet ds = new DataSet();
+                        SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand);
+
+                        sqlDataAdapter.Fill(ds);
+
+                        if (ds.Tables[0].Rows.Count == 0)
+                            return ConfirmAccountResult.NoSuchEmail;
+
+                        bool foundCode = false;
+
+                        foreach (DataRow row in ds.Tables[0].Rows)
+                        {
+                            // don't worry about what the user typed in, make it a case insensitive search
+                            if (row["ConfirmationCode"].ToString().Equals(confirmationCode, StringComparison.CurrentCultureIgnoreCase))
+                            {
+                                foundCode = true;
+
+                                if ((bool)row["Confirmed"])
+                                    return ConfirmAccountResult.AlreadyConfirmed;
+
+                                break;
+                            }
+                        }
+
+                        if (!foundCode)
+                            return ConfirmAccountResult.InvalidCode;
+                    }
+
+                    using (SqlCommand sqlCommand = new SqlCommand("UPDATE Users SET Confirmed = 1 WHERE [Email] = @email", sqlConnection))
+                    {
+                        AddVarCharParameter("email", emailAddress, sqlCommand);
+
+                        if (sqlConnection.State == ConnectionState.Closed)
+                            sqlConnection.Open();
+
+                        int numRowsAffected = sqlCommand.ExecuteNonQuery();
+
+                        if (numRowsAffected != 1)
+                            return ConfirmAccountResult.UnknownError;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SQLLogger.LogException(ex);
+                return ConfirmAccountResult.UnknownError;
+            }
+
+            return ConfirmAccountResult.Success;
+        }
+
+#if DEBUG
+
+        /*  IF NOT EXISTS (SELECT 1 FROM Users WHERE [Email] = 'test@test.com')
+	            INSERT INTO Users ([Name], Nickname, [Email], ConfirmationCode, Confirmed) VALUES ('Test', 'Testing', 'test@test.com', 'ABCDEF', 0)
+            ELSE
+	            UPDATE Users SET Confirmed = 0 WHERE [Email] = 'test@test.com'
+         */
+        /// <summary>Run tests for each scenario</summary>
+        internal static void TestConfirmAccount()
+        {
+            string correctEmail = "test@test.com";
+            string correctCode = "ABCDEF";
+
+            SQL sql = new SQL();
+
+            sql.TestConfirmAccount("nosuchemail", "A", ConfirmAccountResult.NoSuchEmail);
+            sql.TestConfirmAccount(correctEmail, "A", ConfirmAccountResult.InvalidCode);
+            sql.TestConfirmAccount(correctEmail, correctCode, ConfirmAccountResult.Success);
+            sql.TestConfirmAccount(correctEmail, correctCode, ConfirmAccountResult.AlreadyConfirmed);
+        }
+
+        private void TestConfirmAccount(string email, string confirmationCode, ConfirmAccountResult expectedResult)
+        {
+            ConfirmAccountResult result = ConfirmAccount(email, confirmationCode);
+
+            if (result != expectedResult)
+                throw new Exception(string.Format("Expected '{0}' but '{1}' was returned.", expectedResult.ToString(), result.ToString()));
+        }
+#endif
 
         #endregion
 
@@ -129,4 +233,17 @@ namespace MintChipWebApp.Data
 
         #endregion
     }
+
+    #region Enums
+
+    public enum ConfirmAccountResult
+    {
+        Success = 0,
+        NoSuchEmail = 1,
+        AlreadyConfirmed = 2,
+        InvalidCode = 3,
+        UnknownError = 4,
+    }
+
+    #endregion
 }
