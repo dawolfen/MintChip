@@ -29,6 +29,8 @@ namespace MintChipWebApp
             return "Hello World";
         }
 
+        #region CreateAccount
+
         [WebMethod]
         public string CreateAccount(string userName, string nickname, string emailAddress)
         {
@@ -102,6 +104,31 @@ Enjoy the app.", APP_NAME, code);
 
             return string.Format("<xml><IsValid>1</IsValid><EmailCreated>{0}</EmailCreated></xml>", emailCreation ? "1" : "0");
         }
+
+        #endregion
+
+        #region ConfirmAccount
+
+        [WebMethod]
+        public string ConfirmAccount(string emailAddress, string confirmationCode)
+        {
+            SQLLogger.LogInfo(string.Format("Confirming account for emailAddress '{0}' with code '{1}'.", emailAddress, confirmationCode));
+
+            if (string.IsNullOrEmpty(emailAddress))
+                return "<xml><IsValid>0</IsValid><FailureReason>InvalidEmailAddress</FailureReason></xml>";
+
+            // perform the operation and get the return code
+            SQL sql = new SQL();
+
+            ConfirmAccountResult result = sql.ConfirmAccount(emailAddress, confirmationCode);
+
+            if (result == ConfirmAccountResult.Success)
+                return "<xml><IsValid>1</IsValid></xml>";
+            else
+                return string.Format("<xml><IsValid>0</IsValid><FailureReason>{0}</FailureReason></xml>", result.ToString());
+        }
+
+        #endregion
 
         #region Utility functions
 
