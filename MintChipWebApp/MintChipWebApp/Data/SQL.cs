@@ -125,9 +125,10 @@ namespace MintChipWebApp.Data
                             return ConfirmAccountResult.InvalidCode;
                     }
 
-                    using (SqlCommand sqlCommand = new SqlCommand("UPDATE Users SET Confirmed = 1 WHERE [Email] = @email", sqlConnection))
+                    using (SqlCommand sqlCommand = new SqlCommand("UPDATE Users SET Confirmed = 1 WHERE [Email] = @email AND ConfirmationCode = @code", sqlConnection))
                     {
                         AddVarCharParameter("email", emailAddress, sqlCommand);
+                        AddVarCharParameter("code", confirmationCode, sqlCommand);
 
                         if (sqlConnection.State == ConnectionState.Closed)
                             sqlConnection.Open();
