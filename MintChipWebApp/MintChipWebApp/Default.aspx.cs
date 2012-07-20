@@ -22,6 +22,8 @@ namespace MintChipWebApp
             try
             {
                 Response.Write(System.Environment.MachineName);
+                Response.Write(" ");
+                Response.Write(DateTime.Now.ToString());
             }
             catch (Exception)
             {
