@@ -21,6 +21,7 @@ namespace MintChipWebApp
 #endif
             try
             {
+                Response.Write(System.Environment.MachineName);
             }
             catch (Exception)
             {
