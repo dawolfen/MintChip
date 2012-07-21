@@ -49,6 +49,9 @@
   <ItemGroup>
     <Content Include="DataService.asmx" />
     <Content Include="Default.aspx" />
+    <Content Include="MintChipBlackBerryApi.cod">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Scripts\jquery-1.4.1-vsdoc.js" />
     <Content Include="Scripts\jquery-1.4.1.js" />
     <Content Include="Scripts\jquery-1.4.1.min.js" />
