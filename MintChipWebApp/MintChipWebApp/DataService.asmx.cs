@@ -130,6 +130,31 @@ Enjoy the app.", APP_NAME, code);
 
         #endregion
 
+        #region AddFriend
+
+        [WebMethod]
+        public string AddFriend(string emailAddress, string friendEmailAddress)
+        {
+            SQLLogger.LogInfo(string.Format("Adding friend '{0}' to '{1}'.", friendEmailAddress, emailAddress));
+
+            if (string.IsNullOrEmpty(emailAddress))
+                return "<xml><IsValid>0</IsValid><FailureReason>InvalidEmailAddress</FailureReason></xml>";
+            else if (string.IsNullOrEmpty(friendEmailAddress))
+                return "<xml><IsValid>0</IsValid><FailureReason>InvalidFriendEmailAddress</FailureReason></xml>";
+
+            // perform the operation and get the return code
+            SQL sql = new SQL();
+
+            AddFriendResult result = sql.AddFriend(emailAddress, friendEmailAddress);
+
+            if (result == AddFriendResult.Success)
+                return "<xml><IsValid>1</IsValid></xml>";
+            else
+                return string.Format("<xml><IsValid>0</IsValid><FailureReason>{0}</FailureReason></xml>", result.ToString());
+        }
+
+        #endregion
+
         #region Utility functions
 
         // an example would be CW8E3W

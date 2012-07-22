@@ -181,6 +181,81 @@ namespace MintChipWebApp.Data
 
         #endregion
 
+        #region AddFriend
+
+        public AddFriendResult AddFriend(string emailAddress, string friendEmailAddress)
+        {
+            if (string.IsNullOrEmpty(emailAddress))
+                return AddFriendResult.NoSuchEmail;
+
+            if (string.IsNullOrEmpty(friendEmailAddress))
+                return AddFriendResult.NoSuchFriendEmail;
+
+            try
+            {
+                // find the row (if any) for this email address
+                using (SqlConnection sqlConnection = GetConnection())
+                {
+                    // find the row for the email address
+                    DataRow emailRow = GetUser(sqlConnection, emailAddress);
+
+                    if (emailRow == null)
+                        return AddFriendResult.NoSuchEmail;
+
+                    int emailId = (int)emailRow["Id"];
+
+                    // find the row for the Friend email address
+                    DataRow friendEmailRow = GetUser(sqlConnection, friendEmailAddress);
+
+                    if (friendEmailRow == null)
+                        return AddFriendResult.NoSuchFriendEmail;
+
+                    int friendEmailId = (int)friendEmailRow["Id"];
+
+                    // check it hasn't been added already
+                    using (SqlCommand sqlCommand = new SqlCommand("SELECT COUNT(*) FROM Friends WHERE Friend = @friend AND FriendWith = @friendWith", sqlConnection))
+                    {
+                        AddIntParameter("friend", emailId, sqlCommand);
+                        AddIntParameter("friendWith", friendEmailId, sqlCommand);
+
+                        if (sqlConnection.State == ConnectionState.Closed)
+                            sqlConnection.Open();
+
+                        int numRows = (int)sqlCommand.ExecuteScalar();
+
+                        if (numRows > 0)
+                            return AddFriendResult.AlreadyAdded;
+                    }
+
+                    // insert row
+                    using (SqlCommand sqlCommand = new SqlCommand("INSERT INTO Friends (Friend, FriendWith, Confirmed) VALUES (@friend, @friendWith, 0)", sqlConnection))
+                    {
+                        AddIntParameter("friend", emailId, sqlCommand);
+                        AddIntParameter("friendWith", friendEmailId, sqlCommand);
+
+                        if (sqlConnection.State == ConnectionState.Closed)
+                            sqlConnection.Open();
+
+                        int numRowsAffected = sqlCommand.ExecuteNonQuery();
+
+                        if (numRowsAffected != 1)
+                            return AddFriendResult.UnknownError;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SQLLogger.LogException(ex);
+                return AddFriendResult.UnknownError;
+            }
+
+            return AddFriendResult.Success;
+        }
+
+        #endregion
+
+        #region AddParameter functions
+
         internal static void AddVarCharParameter(string name, string value, SqlCommand sqlCommand)
         {
             int length = 1;
@@ -193,6 +268,38 @@ namespace MintChipWebApp.Data
 
             sqlCommand.Parameters.Add(sqlParameter);
         }
+
+        internal static void AddIntParameter(string name, int value, SqlCommand sqlCommand)
+        {
+            SqlParameter sqlParameter = new SqlParameter(name, SqlDbType.Int);
+            sqlParameter.Value = value;
+
+            sqlCommand.Parameters.Add(sqlParameter);
+        }
+
+        #endregion
+
+        #region Helper functions
+
+        private DataRow GetUser(SqlConnection sqlConnection, string emailAddress)
+        {
+            using (SqlCommand sqlCommand = new SqlCommand("SELECT * FROM Users WHERE [Email] = @email", sqlConnection))
+            {
+                AddVarCharParameter("email", emailAddress, sqlCommand);
+
+                DataSet ds = new DataSet();
+                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand);
+
+                sqlDataAdapter.Fill(ds);
+
+                if (ds.Tables[0].Rows.Count == 0)
+                    return null;
+
+                return ds.Tables[0].Rows[0];
+            }
+        }
+
+        #endregion
     }
 
     public static class SQLLogger
@@ -243,6 +350,15 @@ namespace MintChipWebApp.Data
         NoSuchEmail = 1,
         AlreadyConfirmed = 2,
         InvalidCode = 3,
+        UnknownError = 4,
+    }
+
+    public enum AddFriendResult
+    {
+        Success = 0,
+        NoSuchEmail = 1,
+        NoSuchFriendEmail = 2,
+        AlreadyAdded = 3,
         UnknownError = 4,
     }
 

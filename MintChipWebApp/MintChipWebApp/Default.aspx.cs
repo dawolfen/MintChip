@@ -25,7 +25,7 @@ namespace MintChipWebApp
                 Response.Write(" ");
                 Response.Write(DateTime.Now.ToString());
             }
-            catch (Exception)
+            catch
             {
             }
         }
