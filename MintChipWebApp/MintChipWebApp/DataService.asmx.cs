@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security;
 using System.Text;
 using System.Web;
 using System.Web.Services;
@@ -145,10 +146,12 @@ Enjoy the app.", APP_NAME, code);
             // perform the operation and get the return code
             SQL sql = new SQL();
 
-            AddFriendResult result = sql.AddFriend(emailAddress, friendEmailAddress);
+            string friendNickname, friendMintChipId;
+
+            AddFriendResult result = sql.AddFriend(emailAddress, friendEmailAddress, out friendNickname, out friendMintChipId);
 
             if (result == AddFriendResult.Success)
-                return "<xml><IsValid>1</IsValid></xml>";
+                return string.Format("<xml><IsValid>1</IsValid><Nickname>{0}</Nickname><MintChipId>{1}</MintChipId></xml>", SecurityElement.Escape(friendNickname), SecurityElement.Escape(friendMintChipId));
             else
                 return string.Format("<xml><IsValid>0</IsValid><FailureReason>{0}</FailureReason></xml>", result.ToString());
         }

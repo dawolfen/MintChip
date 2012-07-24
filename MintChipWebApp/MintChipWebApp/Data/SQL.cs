@@ -183,8 +183,12 @@ namespace MintChipWebApp.Data
 
         #region AddFriend
 
-        public AddFriendResult AddFriend(string emailAddress, string friendEmailAddress)
+        /// <summary>friendNickname and friendMintChipId are set only in the case where AddFriend is successful</summary>
+        public AddFriendResult AddFriend(string emailAddress, string friendEmailAddress, out string friendNickname, out string friendMintChipId)
         {
+            friendNickname = string.Empty;
+            friendMintChipId = string.Empty;
+
             if (string.IsNullOrEmpty(emailAddress))
                 return AddFriendResult.NoSuchEmail;
 
@@ -240,6 +244,9 @@ namespace MintChipWebApp.Data
 
                         if (numRowsAffected != 1)
                             return AddFriendResult.UnknownError;
+
+                        friendNickname = (string)friendEmailRow["Nickname"];
+                        friendMintChipId = (string)friendEmailRow["MintChipId"];
                     }
                 }
             }
