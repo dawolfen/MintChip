@@ -185,6 +185,21 @@ Enjoy the app.", APP_NAME, code);
 
         #endregion
 
+        #region ConfirmFriend
+
+        [WebMethod]
+        public string ConfirmFriend(string emailAddress, string friendEmailAddress)
+        {
+            // to save time, for now the only thing that is returned is the MintChipId if things succeed, empty string if it fails for whatever reason
+            SQLLogger.LogInfo(string.Format("ConfirmFriend request for '{0}' and '{1}'.", emailAddress, friendEmailAddress));
+
+            SQL sql = new SQL();
+
+            return sql.ConfirmFriend(emailAddress, friendEmailAddress);
+        }
+
+        #endregion
+
         #region Utility functions
 
         // an example would be CW8E3W
