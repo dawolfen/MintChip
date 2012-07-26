@@ -261,6 +261,53 @@ namespace MintChipWebApp.Data
 
         #endregion
 
+        #region GetPendingFriendRequests
+
+        public DataSet GetPendingFriendRequests(string emailAddress)
+        {
+            DataSet ds = new DataSet();
+
+            if (string.IsNullOrEmpty(emailAddress))
+                return ds;
+
+            try
+            {
+                // find the row (if any) for this email address
+                using (SqlConnection sqlConnection = GetConnection())
+                {
+                    string sql = @"DECLARE @id INT = NULL
+                                    SELECT @id = Id FROM Users WHERE Email = @email
+
+                                    IF NOT @id IS NULL
+                                    BEGIN
+	                                    SELECT Users.Id, Users.Email FROM Users, Friends WHERE Users.Id = Friends.Friend AND Friends.Confirmed = 0 AND Friends.FriendWith = @id
+                                    END
+                                    ELSE
+                                    BEGIN
+	                                    SELECT * FROM Users WHERE Id = -1
+                                    END";
+
+                    using (SqlCommand sqlCommand = new SqlCommand(sql, sqlConnection))
+                    {
+                        AddVarCharParameter("email", emailAddress, sqlCommand);
+
+                        using (SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand))
+                        {
+                            sqlDataAdapter.Fill(ds);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SQLLogger.LogException(ex);
+            }
+
+            return ds;
+        }
+
+        #endregion
+
         #region AddParameter functions
 
         internal static void AddVarCharParameter(string name, string value, SqlCommand sqlCommand)

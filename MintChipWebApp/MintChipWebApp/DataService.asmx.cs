@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -154,6 +155,32 @@ Enjoy the app.", APP_NAME, code);
                 return string.Format("<xml><IsValid>1</IsValid><Nickname>{0}</Nickname><MintChipId>{1}</MintChipId></xml>", SecurityElement.Escape(friendNickname), SecurityElement.Escape(friendMintChipId));
             else
                 return string.Format("<xml><IsValid>0</IsValid><FailureReason>{0}</FailureReason></xml>", result.ToString());
+        }
+
+        #endregion
+
+        #region GetPendingFriendRequests
+
+        [WebMethod]
+        public string GetPendingFriendRequests(string emailAddress)
+        {
+            SQLLogger.LogInfo(string.Format("GetPendingFriendRequests for '{0}'.", emailAddress));
+
+            SQL sql = new SQL();
+
+            DataSet ds = sql.GetPendingFriendRequests(emailAddress);
+
+            string requests = string.Empty;
+
+            if (ds.Tables.Count > 0)
+            {
+                foreach (DataRow row in ds.Tables[0].Rows)
+                {
+                    requests += string.Format("<Request>{0}</Request>", SecurityElement.Escape((string)row["Email"]));
+                }
+            }
+
+            return string.Format("<PendingFriendRequests>{0}</PendingFriendRequests>", requests);
         }
 
         #endregion
