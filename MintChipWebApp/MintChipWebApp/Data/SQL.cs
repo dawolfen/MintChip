@@ -308,6 +308,78 @@ namespace MintChipWebApp.Data
 
         #endregion
 
+        #region ConfirmFriend
+
+        public string ConfirmFriend(string emailAddress, string friendEmailAddress)
+        {
+            if (string.IsNullOrEmpty(emailAddress))
+                return string.Empty;
+
+            if (string.IsNullOrEmpty(friendEmailAddress))
+                return string.Empty;
+
+            int updateId = -1;
+            string mintChipId = null;
+
+            try
+            {
+                // double check the relationship exists and that it is unconfirmed
+                using (SqlConnection sqlConnection = GetConnection())
+                {
+                    string sql = @"DECLARE @id INT = NULL, @friendId INT = NULL
+                                    SELECT @id = Id FROM Users WHERE Email = @email
+                                    SELECT @friendId = Id FROM Users WHERE Email = @friendEmail
+
+                                    IF NOT @id IS NULL AND NOT @friendId IS NULL
+                                    BEGIN
+	                                    SELECT Users.Id, Users.Email, Users.MintChipId, Friends.Id AS UpdateId FROM Users, Friends WHERE Users.Id = Friends.Friend AND Friends.Confirmed = 0 AND Friends.FriendWith = @id AND Friends.Friend = @friendId
+                                    END
+                                    ELSE
+                                    BEGIN
+	                                    SELECT * FROM Users WHERE Id = -1
+                                    END";
+
+                    using (SqlCommand sqlCommand = new SqlCommand(sql, sqlConnection))
+                    {
+                        AddVarCharParameter("email", emailAddress, sqlCommand);
+                        AddVarCharParameter("friendEmail", friendEmailAddress, sqlCommand);
+
+                        using (SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand))
+                        {
+                            DataSet ds = new DataSet();
+                            sqlDataAdapter.Fill(ds);
+
+                            if (ds.Tables.Count > 0 && ds.Tables[0].Rows.Count == 1)
+                            {
+                                updateId = (int)ds.Tables[0].Rows[0]["UpdateId"];
+                                mintChipId = (string)ds.Tables[0].Rows[0]["MintChipId"];
+
+                                // update the row to Confirmed
+                                using (SqlCommand updateSqlCommand = new SqlCommand(string.Format("UPDATE Friends SET Confirmed = 1 WHERE Id = {0}", updateId)))
+                                {
+                                    int numRowsAffected = updateSqlCommand.ExecuteNonQuery();
+
+                                    if (numRowsAffected != 1)
+                                        mintChipId = null;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SQLLogger.LogException(ex);
+            }
+
+            if (string.IsNullOrEmpty(mintChipId))
+                return string.Empty;
+
+            return mintChipId;
+        }
+
+        #endregion
+
         #region AddParameter functions
 
         internal static void AddVarCharParameter(string name, string value, SqlCommand sqlCommand)
