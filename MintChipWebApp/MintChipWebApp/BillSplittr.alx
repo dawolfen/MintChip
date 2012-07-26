@@ -1,0 +1,41 @@
+<loader version="1.0">
+	<application id="BillSplittr">
+		<name >
+			Bill Splittr
+		</name>
+		<description >
+			
+		</description>
+		<version >
+			0.9.004
+		</version>
+		<vendor >
+			David Wolfendale
+		</vendor>
+		<copyright >
+			Copyright (c) 2012 David Wolfendale
+		</copyright>
+		<fileset Java="1.54" _blackberryVersion="[5.0.0,5.0.1)">
+			<directory >
+				5.0.0
+			</directory>
+			<files >
+				BillSplittr.cod
+
+			</files>
+
+		</fileset>
+		<fileset Java="1.54" _blackberryVersion="[7.0.0)">
+			<directory >
+				7.0.0
+			</directory>
+			<files >
+				BillSplittr.cod
+
+			</files>
+
+		</fileset>
+
+	</application>
+
+</loader>
