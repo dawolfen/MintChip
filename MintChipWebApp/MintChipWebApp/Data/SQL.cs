@@ -357,6 +357,9 @@ namespace MintChipWebApp.Data
                                 // update the row to Confirmed
                                 using (SqlCommand updateSqlCommand = new SqlCommand(string.Format("UPDATE Friends SET Confirmed = 1 WHERE Id = {0}", updateId), sqlConnection))
                                 {
+                                    if (sqlConnection.State == ConnectionState.Closed)
+                                        sqlConnection.Open();
+
                                     int numRowsAffected = updateSqlCommand.ExecuteNonQuery();
 
                                     if (numRowsAffected != 1)
