@@ -50,6 +50,9 @@
     <Content Include="5_0_0\BillSplittr.cod">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="BillSplittr.jar">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="DataService.asmx" />
     <Content Include="Default.aspx" />
     <Content Include="MintChipBlackBerryApi.cod">
@@ -85,6 +88,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="BillSplittr.alx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="BillSplittr.jad">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
