@@ -50,6 +50,7 @@
     <Content Include="5_0_0\BillSplittr.cod">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="BillSplittr.cod" />
     <Content Include="BillSplittr.jar">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
