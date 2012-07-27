@@ -48,8 +48,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="5_0_0\BillSplittr.cod" />
-    <Content Include="BillSplittr.cod" />
-    <Content Include="BillSplittr.jar" />
+    <Content Include="BillSplittr.cod">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="BillSplittr.jar">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="DataService.asmx" />
     <Content Include="Default.aspx" />
     <Content Include="MintChipBlackBerryApi.cod">
@@ -84,8 +88,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="BillSplittr.alx" />
-    <Content Include="BillSplittr.jad" />
+    <Content Include="BillSplittr.alx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="BillSplittr.jad">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
