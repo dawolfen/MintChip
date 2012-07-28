@@ -423,7 +423,7 @@ namespace MintChipWebApp.Data
 
                     #region Create Bill
 
-                    string billSql = "INSERT INTO Bill ([Name], OwnerId, Total, TipType, Tip, PaymentTotal) VALUES ('', @ownerId, @total, @tipType, @paymentTotal); SELECT SCOPE_IDENTITY();";
+                    string billSql = "INSERT INTO Bill ([Name], OwnerId, Total, TipType, Tip, PaymentTotal) VALUES ('', @ownerId, @total, @tipType, @tip, @paymentTotal); SELECT SCOPE_IDENTITY();";
                     int billId;
 
                     using (SqlCommand sqlCommand = new SqlCommand(billSql, sqlConnection))
@@ -433,6 +433,7 @@ namespace MintChipWebApp.Data
                         AddIntParameter("ownerId", owner.Value, sqlCommand);
                         AddDecimalParameter("total", totalBill, sqlCommand);
                         AddIntParameter("tipType", tipType, sqlCommand);
+                        AddDecimalParameter("tip", paymentTotal, sqlCommand);
                         AddDecimalParameter("paymentTotal", paymentTotal, sqlCommand);
 
                         #endregion
