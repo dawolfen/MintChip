@@ -454,7 +454,7 @@ namespace MintChipWebApp.Data
 
                     foreach (int friendId in friendIdList)
                     {
-                        using (SqlCommand sqlCommand = new SqlCommand(billSql, sqlConnection))
+                        using (SqlCommand sqlCommand = new SqlCommand(billParticipantSql, sqlConnection))
                         {
                             #region Parameters
 
@@ -514,6 +514,7 @@ namespace MintChipWebApp.Data
             sqlParameter.Precision = 18;
             sqlParameter.Scale = 2;
 
+            sqlCommand.Parameters.Add(sqlParameter);
         }
 
         #endregion
