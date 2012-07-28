@@ -423,7 +423,7 @@ namespace MintChipWebApp.Data
 
                     #region Create Bill
 
-                    string billSql = "INSERT INTO Bill ([Name], OwnerId, Total, TipType, Tip, PaymentTotal) VALUES ('', @ownerId, @total, @tipType, @tip, @paymentTotal); SELECT SCOPE_IDENTITY();";
+                    string billSql = "INSERT INTO Bill ([Name], OwnerId, Total, TipType, Tip, PaymentTotal) VALUES ('', @ownerId, @total, @tipType, @tip, @paymentTotal); SELECT CONVERT(INT, SCOPE_IDENTITY());";
                     int billId;
 
                     using (SqlCommand sqlCommand = new SqlCommand(billSql, sqlConnection))
