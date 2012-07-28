@@ -383,6 +383,107 @@ namespace MintChipWebApp.Data
 
         #endregion
 
+        #region CreateBill
+
+        public string CreateBill(string emailAddress, string friendEmailAddresses, double totalBill, int tipType, double tip, double paymentTotal, double portion)
+        {
+            if (string.IsNullOrEmpty(emailAddress))
+                return string.Empty;
+
+            if (string.IsNullOrEmpty(friendEmailAddresses))
+                return string.Empty;
+
+            string[] friends = friendEmailAddresses.Split('|');
+
+            try
+            {
+                using (SqlConnection sqlConnection = GetConnection())
+                {
+                    // get the id of the creator
+                    int? owner = GetUserId(sqlConnection, emailAddress);
+
+                    if (!owner.HasValue)
+                        return "";
+
+                    // find the friends, check they are confirmed (in interest of time though, do this later, at the deadline...)
+                    List<int> friendIdList = new List<int>();
+
+                    foreach (string friendEmail in friends)
+                    {
+                        int? friend = GetUserId(sqlConnection, friendEmail);
+
+                        if (friend.HasValue)
+                            friendIdList.Add(friend.Value);
+                    }
+
+                    if (friendIdList.Count == 0)
+                        return "";
+
+                    // have enough participants, create bill
+
+                    #region Create Bill
+
+                    string billSql = "INSERT INTO Bill ([Name], OwnerId, Total, TipType, Tip, PaymentTotal) VALUES ('', @ownerId, @total, @tipType, @paymentTotal); SELECT SCOPE_IDENTITY();";
+                    int billId;
+
+                    using (SqlCommand sqlCommand = new SqlCommand(billSql, sqlConnection))
+                    {
+                        #region Parameters
+
+                        AddIntParameter("ownerId", owner.Value, sqlCommand);
+                        AddDecimalParameter("total", totalBill, sqlCommand);
+                        AddIntParameter("tipType", tipType, sqlCommand);
+                        AddDecimalParameter("paymentTotal", paymentTotal, sqlCommand);
+
+                        #endregion
+
+                        if (sqlConnection.State == ConnectionState.Closed)
+                            sqlConnection.Open();
+
+                        billId = (int)sqlCommand.ExecuteScalar();
+                    }
+
+                    if (billId < 1)
+                        return "";
+
+                    #endregion
+
+                    #region Create each of the Bill Participants
+
+                    string billParticipantSql = "INSERT INTO BillParticipant (BillId, OwnerId, DisplayName, Payment, TransactionId) VALUES (@billId, @ownerId, '', @payment, '')";
+
+                    foreach (int friendId in friendIdList)
+                    {
+                        using (SqlCommand sqlCommand = new SqlCommand(billSql, sqlConnection))
+                        {
+                            #region Parameters
+
+                            AddIntParameter("billId", billId, sqlCommand);
+                            AddIntParameter("ownerId", friendId, sqlCommand);
+                            AddDecimalParameter("payment", portion, sqlCommand);
+
+                            #endregion
+
+                            if (sqlConnection.State == ConnectionState.Closed)
+                                sqlConnection.Open();
+
+                            sqlCommand.ExecuteNonQuery();
+                        }
+                    }
+
+                    #endregion
+                }
+            }
+            catch (Exception ex)
+            {
+                SQLLogger.LogException(ex);
+            }
+
+            return "";
+        }
+
+        #endregion
+
         #region AddParameter functions
 
         internal static void AddVarCharParameter(string name, string value, SqlCommand sqlCommand)
@@ -406,6 +507,15 @@ namespace MintChipWebApp.Data
             sqlCommand.Parameters.Add(sqlParameter);
         }
 
+        internal static void AddDecimalParameter(string name, double value, SqlCommand sqlCommand)
+        {
+            SqlParameter sqlParameter = new SqlParameter(name, SqlDbType.Decimal);
+            sqlParameter.Value = value;
+            sqlParameter.Precision = 18;
+            sqlParameter.Scale = 2;
+
+        }
+
         #endregion
 
         #region Helper functions
@@ -426,6 +536,16 @@ namespace MintChipWebApp.Data
 
                 return ds.Tables[0].Rows[0];
             }
+        }
+
+        private int? GetUserId(SqlConnection sqlConnection, string emailAddress)
+        {
+            DataRow row = GetUser(sqlConnection, emailAddress);
+
+            if (row == null)
+                return null;
+
+            return (int)row["Id"];
         }
 
         #endregion

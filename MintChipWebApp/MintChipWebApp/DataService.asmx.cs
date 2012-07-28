@@ -25,9 +25,13 @@ namespace MintChipWebApp
     {
         public static readonly string APP_NAME = "Bill Splittr";
 
+        // just here for debugging to see if there is only ever one instance created
+        public static Guid Id = Guid.NewGuid();
+
         [WebMethod]
         public string HelloWorld()
         {
+            System.Diagnostics.Debug.WriteLine(Id.ToString());
             return "Hello World";
         }
 
@@ -196,6 +200,20 @@ Enjoy the app.", APP_NAME, code);
             SQL sql = new SQL();
 
             return sql.ConfirmFriend(emailAddress, friendEmailAddress);
+        }
+
+        #endregion
+
+        #region CreateBill
+
+        [WebMethod]
+        public string CreateBill(string emailAddress, string friendEmailAddresses, double totalBill, int tipType, double tip, double paymentTotal, double portion)
+        {
+            SQLLogger.LogInfo(string.Format("Creating Bill by '{0}' for '{1}'. Billed amount {2}, tip type {3}, tip {4}, total of {5} paying {6} each.", emailAddress, friendEmailAddresses, totalBill, tipType, tip, paymentTotal, portion));
+
+            SQL sql = new SQL();
+
+            return sql.CreateBill(emailAddress, friendEmailAddresses, totalBill, tipType, tip, paymentTotal, portion);
         }
 
         #endregion
