@@ -531,7 +531,7 @@ namespace MintChipWebApp.Data
 
                     using (SqlCommand sqlCommand = new SqlCommand(sql, sqlConnection))
                     {
-                        AddVarCharParameter("email", emailAddress, sqlCommand);
+                        AddVarCharParameter("emailAddress", emailAddress, sqlCommand);
 
                         using (SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand))
                         {
