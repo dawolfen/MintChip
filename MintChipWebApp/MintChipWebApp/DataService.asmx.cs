@@ -218,6 +218,28 @@ Enjoy the app.", APP_NAME, code);
 
         #endregion
 
+        #region GetUnpaidBills
+
+        [WebMethod]
+        public string GetUnpaidBills(string emailAddress)
+        {
+            SQLLogger.LogInfo(string.Format("GetUnpaidBills({0})", emailAddress));
+
+            SQL sql = new SQL();
+
+            DataSet ds = sql.GetUnpaidBills(emailAddress);
+
+            if (ds == null || ds.Tables.Count == 0 || ds.Tables[0].Rows.Count == 0)
+                return "";
+
+            // cheat for now and only return the first row
+            DataRow row = ds.Tables[0].Rows[0];
+
+            return string.Format("<Bill><BillId>{0}</BillId><Payment>{1}</Payment><BillOwner>{2}</BillOwner></Bill>", row["BillId"], row["Payment"], SecurityElement.Escape((string)row["UserEmail"]));
+        }
+
+        #endregion
+
         #region Utility functions
 
         // an example would be CW8E3W

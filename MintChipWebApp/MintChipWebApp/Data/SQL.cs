@@ -485,6 +485,74 @@ namespace MintChipWebApp.Data
 
         #endregion
 
+        #region GetUnpaidBills
+
+        public DataSet GetUnpaidBills(string emailAddress)
+        {
+            if (string.IsNullOrEmpty(emailAddress))
+                return null;
+
+            try
+            {
+                // double check the relationship exists and that it is unconfirmed
+                using (SqlConnection sqlConnection = GetConnection())
+                {
+                    string sql = @"DECLARE @userId INT = NULL, @billId INT = NULL, @billOwnerEmailAddress VARCHAR(255) = NULL, @billOwnerId INT = NULL, @RowCount INT = 0
+
+                                    SELECT @userId = Id FROM Users WHERE Email = @emailAddress
+
+                                    IF NOT @userId IS NULL
+                                    BEGIN
+	                                    -- this will need to be more sophisticated later, in terms of returning a set of bills. For now pick one because of time constraints
+	
+	                                    -- temp variables
+	                                    DECLARE @payment DECIMAL(18, 2) = NULL
+	                                    -- end temp variables
+	
+	                                    SELECT TOP 1 @billId = BillId, @payment = Payment FROM BillParticipant WHERE Finalized = 0 AND OwnerId = @userId
+	
+	                                    -- find the Bill
+	                                    IF NOT @billId IS NULL
+	                                    BEGIN
+		                                    SELECT @billOwnerId = OwnerId, @billOwnerEmailAddress = Email FROM Bill, Users WHERE Bill.Id = @billId AND Bill.OwnerId = Users.Id
+	                                    END
+	
+	                                    IF NOT @payment IS NULL AND NOT @billOwnerId IS NULL AND NOT @billOwnerEmailAddress IS NULL
+	                                    BEGIN
+		                                    SELECT @billId AS BillId, @payment AS Payment, @billOwnerEmailAddress AS UserEmail
+		                                    SELECT @RowCount = @@ROWCOUNT
+	                                    END
+                                    END
+
+                                    IF @RowCount < 1
+                                    BEGIN
+	                                    SELECT * FROM Users WHERE Id = -1
+                                    END";
+
+                    using (SqlCommand sqlCommand = new SqlCommand(sql, sqlConnection))
+                    {
+                        AddVarCharParameter("email", emailAddress, sqlCommand);
+
+                        using (SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand))
+                        {
+                            DataSet ds = new DataSet();
+                            sqlDataAdapter.Fill(ds);
+
+                            return ds;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SQLLogger.LogException(ex);
+            }
+
+            return null;
+        }
+
+        #endregion
+
         #region AddParameter functions
 
         internal static void AddVarCharParameter(string name, string value, SqlCommand sqlCommand)
