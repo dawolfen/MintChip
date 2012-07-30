@@ -235,7 +235,23 @@ Enjoy the app.", APP_NAME, code);
             // cheat for now and only return the first row
             DataRow row = ds.Tables[0].Rows[0];
 
-            return string.Format("<Bill><BillId>{0}</BillId><Payment>{1}</Payment><BillOwner>{2}</BillOwner></Bill>", row["BillId"], row["Payment"], SecurityElement.Escape((string)row["UserEmail"]));
+            return string.Format("<Bill><BillParticipantId>{0}</BillParticipantId><BillId>{1}</BillId><Payment>{2}</Payment><BillOwner>{3}</BillOwner><BillOwnerMintChipId>{4}</BillOwnerMintChipId></Bill>", row["BillParticipantId"], row["BillId"], row["Payment"], SecurityElement.Escape((string)row["UserEmail"]), SecurityElement.Escape((string)row["UserMintChipId"]));
+        }
+
+        #endregion
+
+        #region FinalizePayment
+
+        [WebMethod]
+        public string FinalizePayment(int billParticipantId, string transactionId)
+        {
+            SQLLogger.LogInfo(string.Format("Finalize payment {0}, '{1}'.", billParticipantId, transactionId));
+
+            SQL sql = new SQL();
+
+            sql.FinalizePayment(billParticipantId, transactionId);
+
+            return "";
         }
 
         #endregion

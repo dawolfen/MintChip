@@ -497,7 +497,7 @@ namespace MintChipWebApp.Data
                 // double check the relationship exists and that it is unconfirmed
                 using (SqlConnection sqlConnection = GetConnection())
                 {
-                    string sql = @"DECLARE @userId INT = NULL, @billId INT = NULL, @billOwnerEmailAddress VARCHAR(255) = NULL, @billOwnerId INT = NULL, @RowCount INT = 0
+                    string sql = @"DECLARE @userId INT = NULL, @billId INT = NULL, @billParticipantId INT = NULL, @billOwnerEmailAddress VARCHAR(255) = NULL, @billOwnerMintChipId VARCHAR(255) = NULL, @billOwnerId INT = NULL, @RowCount INT = 0
 
                                     SELECT @userId = Id FROM Users WHERE Email = @emailAddress
 
@@ -509,17 +509,17 @@ namespace MintChipWebApp.Data
 	                                    DECLARE @payment DECIMAL(18, 2) = NULL
 	                                    -- end temp variables
 	
-	                                    SELECT TOP 1 @billId = BillId, @payment = Payment FROM BillParticipant WHERE Finalized = 0 AND OwnerId = @userId
+	                                    SELECT TOP 1 @billParticipantId = Id, @billId = BillId, @payment = Payment FROM BillParticipant WHERE Finalized = 0 AND OwnerId = @userId
 	
 	                                    -- find the Bill
 	                                    IF NOT @billId IS NULL
 	                                    BEGIN
-		                                    SELECT @billOwnerId = OwnerId, @billOwnerEmailAddress = Email FROM Bill, Users WHERE Bill.Id = @billId AND Bill.OwnerId = Users.Id
+		                                    SELECT @billOwnerId = OwnerId, @billOwnerEmailAddress = Email, @billOwnerMintChipId = MintChipId FROM Bill, Users WHERE Bill.Id = @billId AND Bill.OwnerId = Users.Id
 	                                    END
 	
-	                                    IF NOT @payment IS NULL AND NOT @billOwnerId IS NULL AND NOT @billOwnerEmailAddress IS NULL
+	                                    IF NOT @payment IS NULL AND NOT @billOwnerId IS NULL AND NOT @billOwnerEmailAddress IS NULL AND NOT @billOwnerMintChipId IS NULL
 	                                    BEGIN
-		                                    SELECT @billId AS BillId, @payment AS Payment, @billOwnerEmailAddress AS UserEmail
+		                                    SELECT @billParticipantId AS BillParticipantId, @billId AS BillId, @payment AS Payment, @billOwnerEmailAddress AS UserEmail, @billOwnerMintChipId AS UserMintChipId
 		                                    SELECT @RowCount = @@ROWCOUNT
 	                                    END
                                     END
@@ -549,6 +549,41 @@ namespace MintChipWebApp.Data
             }
 
             return null;
+        }
+
+        #endregion
+
+        #region FinalizePayment
+
+        public string FinalizePayment(int billParticipantId, string transactionId)
+        {
+            try
+            {
+                // update the database
+                using (SqlConnection sqlConnection = GetConnection())
+                {
+                    string sql = @"UPDATE BillParticipant SET Finalized = 1, TransactionId = @transactionId WHERE Id = @id AND Finalized = 0 AND ISNULL(TransactionId) = ''";
+
+                    using (SqlCommand sqlCommand = new SqlCommand(sql, sqlConnection))
+                    {
+                        AddIntParameter("id", billParticipantId, sqlCommand);
+                        AddVarCharParameter("transactionId", transactionId, sqlCommand);
+
+                        if (sqlConnection.State == ConnectionState.Closed)
+                            sqlConnection.Open();
+
+                        int numRows = sqlCommand.ExecuteNonQuery();
+
+                        return numRows.ToString();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SQLLogger.LogException(ex);
+            }
+
+            return "";
         }
 
         #endregion
