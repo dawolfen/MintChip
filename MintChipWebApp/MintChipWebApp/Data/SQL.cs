@@ -562,7 +562,7 @@ namespace MintChipWebApp.Data
                 // update the database
                 using (SqlConnection sqlConnection = GetConnection())
                 {
-                    string sql = @"UPDATE BillParticipant SET Finalized = 1, TransactionId = @transactionId WHERE Id = @id AND Finalized = 0 AND ISNULL(TransactionId) = ''";
+                    string sql = @"UPDATE BillParticipant SET Finalized = 1, TransactionId = @transactionId WHERE Id = @id AND Finalized = 0 AND ISNULL(TransactionId, '') = ''";
 
                     using (SqlCommand sqlCommand = new SqlCommand(sql, sqlConnection))
                     {
