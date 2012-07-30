@@ -256,6 +256,28 @@ Enjoy the app.", APP_NAME, code);
 
         #endregion
 
+        #region GetPendingPayments
+
+        [WebMethod]
+        public string GetPendingPayments(string emailAddress)
+        {
+            SQLLogger.LogInfo(string.Format("GetPendingPayments({0})", emailAddress));
+
+            SQL sql = new SQL();
+
+            DataSet ds = sql.GetPendingPayments(emailAddress);
+
+            if (ds == null || ds.Tables.Count == 0 || ds.Tables[0].Rows.Count == 0)
+                return "";
+
+            // cheat for now and only return the first row
+            DataRow row = ds.Tables[0].Rows[0];
+
+            return string.Format("<Payment><BillParticipantId>{0}</BillParticipantId><TransactionId>{1}</TransactionId></Payment>", row["BillParticipantId"], SecurityElement.Escape((string)row["TransactionId"]));
+        }
+
+        #endregion
+
         #region Utility functions
 
         // an example would be CW8E3W

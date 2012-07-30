@@ -588,6 +588,74 @@ namespace MintChipWebApp.Data
 
         #endregion
 
+        #region GetPendingPayments
+
+        public DataSet GetPendingPayments(string emailAddress)
+        {
+            if (string.IsNullOrEmpty(emailAddress))
+                return null;
+
+            try
+            {
+                // double check the relationship exists and that it is unconfirmed
+                using (SqlConnection sqlConnection = GetConnection())
+                {
+                    string sql = @"DECLARE @userId INT = NULL, @billId INT = NULL, @billParticipantId INT = NULL, @billOwnerEmailAddress VARCHAR(255) = NULL, @billOwnerMintChipId VARCHAR(255) = NULL, @billOwnerId INT = NULL, @RowCount INT = 0
+
+                                    SELECT @userId = Id FROM Users WHERE Email = @emailAddress
+
+                                    IF NOT @userId IS NULL
+                                    BEGIN
+                                        -- this will need to be more sophisticated later, in terms of returning a set of pending payments. For now pick one because of time constraints
+
+                                        -- temp variables
+                                        DECLARE @transactionId VARCHAR(255) = NULL
+                                        -- end temp variables
+
+                                        SELECT TOP 1 @billParticipantId = Id, @billId = BillId, @transactionId = TransactionId FROM BillParticipant WHERE Finalized = 1 AND BillId IN (SELECT Id FROM Bill WHERE OwnerId = @userId) AND PaymentTransfered = 0
+
+                                        -- find the Bill
+                                        IF NOT @billId IS NULL
+                                        BEGIN
+                                            SELECT @billOwnerId = OwnerId, @billOwnerEmailAddress = Email, @billOwnerMintChipId = MintChipId FROM Bill, Users WHERE Bill.Id = @billId AND Bill.OwnerId = Users.Id
+                                        END
+
+                                        IF NOT @transactionId IS NULL AND NOT @billOwnerId IS NULL AND NOT @billOwnerEmailAddress IS NULL AND NOT @billOwnerMintChipId IS NULL
+                                        BEGIN
+                                            SELECT @billParticipantId AS BillParticipantId, @billId AS BillId, @transactionId AS TransactionId, @billOwnerEmailAddress AS UserEmail, @billOwnerMintChipId AS UserMintChipId
+                                            SELECT @RowCount = @@ROWCOUNT
+                                        END
+                                    END
+
+                                    IF @RowCount < 1
+                                    BEGIN
+                                        SELECT * FROM Users WHERE Id = -1
+                                    END";
+
+                    using (SqlCommand sqlCommand = new SqlCommand(sql, sqlConnection))
+                    {
+                        AddVarCharParameter("emailAddress", emailAddress, sqlCommand);
+
+                        using (SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand))
+                        {
+                            DataSet ds = new DataSet();
+                            sqlDataAdapter.Fill(ds);
+
+                            return ds;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SQLLogger.LogException(ex);
+            }
+
+            return null;
+        }
+
+        #endregion
+
         #region AddParameter functions
 
         internal static void AddVarCharParameter(string name, string value, SqlCommand sqlCommand)
