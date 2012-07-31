@@ -622,7 +622,7 @@ namespace MintChipWebApp.Data
 
                                         IF NOT @transactionId IS NULL AND NOT @billOwnerId IS NULL AND NOT @billOwnerEmailAddress IS NULL AND NOT @billOwnerMintChipId IS NULL
                                         BEGIN
-                                            SELECT @billParticipantId AS BillParticipantId, @billId AS BillId, @transactionId AS TransactionId, @billOwnerEmailAddress AS UserEmail, @billOwnerMintChipId AS UserMintChipId
+                                            SELECT @billParticipantId AS BillParticipantId, (SELECT Email FROM Users WHERE Id = (SELECT OwnerId FROM BillParticipant WHERE Id = @billParticipantId)) AS BillParticipantEmail, @billId AS BillId, @transactionId AS TransactionId, @billOwnerEmailAddress AS UserEmail, @billOwnerMintChipId AS UserMintChipId
                                             SELECT @RowCount = @@ROWCOUNT
                                         END
                                     END
