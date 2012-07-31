@@ -278,6 +278,18 @@ Enjoy the app.", APP_NAME, code);
 
         #endregion
 
+        [WebMethod]
+        public string FinalizeReceivedPayment(int billParticipantId)
+        {
+            SQLLogger.LogInfo(string.Format("FinalizeReceivedPayment({0})", billParticipantId));
+
+            SQL sql = new SQL();
+
+            int result = sql.FinalizeReceivedPayment(billParticipantId);
+
+            return result.ToString();
+        }
+
         #region Utility functions
 
         // an example would be CW8E3W

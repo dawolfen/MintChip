@@ -656,6 +656,35 @@ namespace MintChipWebApp.Data
 
         #endregion
 
+        #region FinalizeReceivedPayment
+
+        public int FinalizeReceivedPayment(int billParticipantId)
+        {
+            try
+            {
+                using (SqlConnection sqlConnection = GetConnection())
+                {
+                    string sql = @"UPDATE BillParticipant SET PaymentTransfered = 1 WHERE Id = @billParticipantId AND PaymentTransfered = 0";
+
+                    using (SqlCommand sqlCommand = new SqlCommand(sql, sqlConnection))
+                    {
+                        AddIntParameter("billParticipantId", billParticipantId, sqlCommand);
+
+                        int numRows = sqlCommand.ExecuteNonQuery();
+                        return numRows;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SQLLogger.LogException(ex);
+            }
+
+            return 0;
+        }
+
+        #endregion
+
         #region AddParameter functions
 
         internal static void AddVarCharParameter(string name, string value, SqlCommand sqlCommand)
