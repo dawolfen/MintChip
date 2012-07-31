@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Security;
 using System.Text;
+using System.Threading;
 using System.Web;
 using System.Web.Services;
 
@@ -27,6 +28,15 @@ namespace MintChipWebApp
 
         // just here for debugging to see if there is only ever one instance created
         public static Guid Id = Guid.NewGuid();
+
+        private static object lockObj;
+        private static Dictionary<string, DateTime> getUnpaidBillsCallTable;
+
+        static DataService()
+        {
+            lockObj = new object();
+            getUnpaidBillsCallTable = new Dictionary<string, DateTime>();
+        }
 
         [WebMethod]
         public string HelloWorld()
@@ -225,6 +235,30 @@ Enjoy the app.", APP_NAME, code);
         {
             SQLLogger.LogInfo(string.Format("GetUnpaidBills({0})", emailAddress));
 
+            #region Sleep
+
+            // if this was called less than 5 seconds ago, sleep... (this is test code until I do event notification...)
+            DateTime now = DateTime.Now;
+            bool sleep = false;
+
+            lock (lockObj)
+            {
+                if (getUnpaidBillsCallTable.ContainsKey(emailAddress))
+                {
+                    if (getUnpaidBillsCallTable[emailAddress].AddSeconds(5) > now)
+                    {
+                        sleep = true;
+                    }
+                }
+            }
+
+            if (sleep)
+            {
+                Thread.Sleep(10000);
+            }
+
+            #endregion
+
             SQL sql = new SQL();
 
             DataSet ds = sql.GetUnpaidBills(emailAddress);
@@ -234,6 +268,25 @@ Enjoy the app.", APP_NAME, code);
 
             // cheat for now and only return the first row
             DataRow row = ds.Tables[0].Rows[0];
+
+            #region Update Call Table
+
+            now = DateTime.Now;
+
+            lock (lockObj)
+            {
+                if (getUnpaidBillsCallTable.ContainsKey(emailAddress))
+                {
+                    if (now > getUnpaidBillsCallTable[emailAddress])
+                        getUnpaidBillsCallTable[emailAddress] = now;
+                }
+                else
+                {
+                    getUnpaidBillsCallTable[emailAddress] = now;
+                }
+            }
+
+            #endregion
 
             return string.Format("<Bill><BillParticipantId>{0}</BillParticipantId><BillId>{1}</BillId><Payment>{2}</Payment><BillOwner>{3}</BillOwner><BillOwnerMintChipId>{4}</BillOwnerMintChipId></Bill>", row["BillParticipantId"], row["BillId"], row["Payment"], SecurityElement.Escape((string)row["UserEmail"]), SecurityElement.Escape((string)row["UserMintChipId"]));
         }
