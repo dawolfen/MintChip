@@ -670,6 +670,9 @@ namespace MintChipWebApp.Data
                     {
                         AddIntParameter("billParticipantId", billParticipantId, sqlCommand);
 
+                        if (sqlConnection.State == ConnectionState.Closed)
+                            sqlConnection.Open();
+
                         int numRows = sqlCommand.ExecuteNonQuery();
                         return numRows;
                     }
