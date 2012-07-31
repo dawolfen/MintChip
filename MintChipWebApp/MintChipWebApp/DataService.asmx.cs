@@ -273,7 +273,7 @@ Enjoy the app.", APP_NAME, code);
             // cheat for now and only return the first row
             DataRow row = ds.Tables[0].Rows[0];
 
-            return string.Format("<Payment><BillParticipantId>{0}</BillParticipantId><TransactionId>{1}</TransactionId></Payment>", row["BillParticipantId"], SecurityElement.Escape((string)row["TransactionId"]));
+            return string.Format("<Payment><BillParticipantId>{0}</BillParticipantId><TransactionId>{1}</TransactionId><BillParticipantEmail>{2}</BillParticipantEmail></Payment>", row["BillParticipantId"], SecurityElement.Escape((string)row["TransactionId"]), SecurityElement.Escape((string)row["BillParticipantEmail"]));
         }
 
         #endregion
