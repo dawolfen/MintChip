@@ -259,36 +259,41 @@ Enjoy the app.", APP_NAME, code);
 
             #endregion
 
-            SQL sql = new SQL();
-
-            DataSet ds = sql.GetUnpaidBills(emailAddress);
-
-            if (ds == null || ds.Tables.Count == 0 || ds.Tables[0].Rows.Count == 0)
-                return "";
-
-            // cheat for now and only return the first row
-            DataRow row = ds.Tables[0].Rows[0];
-
-            #region Update Call Table
-
-            now = DateTime.Now;
-
-            lock (lockObj)
+            try
             {
-                if (getUnpaidBillsCallTable.ContainsKey(emailAddress))
-                {
-                    if (now > getUnpaidBillsCallTable[emailAddress])
-                        getUnpaidBillsCallTable[emailAddress] = now;
-                }
-                else
-                {
-                    getUnpaidBillsCallTable[emailAddress] = now;
-                }
+                SQL sql = new SQL();
+
+                DataSet ds = sql.GetUnpaidBills(emailAddress);
+
+                if (ds == null || ds.Tables.Count == 0 || ds.Tables[0].Rows.Count == 0)
+                    return "";
+
+                // cheat for now and only return the first row
+                DataRow row = ds.Tables[0].Rows[0];
+
+                return string.Format("<Bill><BillParticipantId>{0}</BillParticipantId><BillId>{1}</BillId><Payment>{2}</Payment><BillOwner>{3}</BillOwner><BillOwnerMintChipId>{4}</BillOwnerMintChipId></Bill>", row["BillParticipantId"], row["BillId"], row["Payment"], SecurityElement.Escape((string)row["UserEmail"]), SecurityElement.Escape((string)row["UserMintChipId"]));
             }
+            finally
+            {
+                #region Update Call Table
 
-            #endregion
+                now = DateTime.Now;
 
-            return string.Format("<Bill><BillParticipantId>{0}</BillParticipantId><BillId>{1}</BillId><Payment>{2}</Payment><BillOwner>{3}</BillOwner><BillOwnerMintChipId>{4}</BillOwnerMintChipId></Bill>", row["BillParticipantId"], row["BillId"], row["Payment"], SecurityElement.Escape((string)row["UserEmail"]), SecurityElement.Escape((string)row["UserMintChipId"]));
+                lock (lockObj)
+                {
+                    if (getUnpaidBillsCallTable.ContainsKey(emailAddress))
+                    {
+                        if (now > getUnpaidBillsCallTable[emailAddress])
+                            getUnpaidBillsCallTable[emailAddress] = now;
+                    }
+                    else
+                    {
+                        getUnpaidBillsCallTable[emailAddress] = now;
+                    }
+                }
+
+                #endregion
+            }
         }
 
         #endregion
