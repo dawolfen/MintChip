@@ -57,7 +57,7 @@ namespace MintChipWebApp.Data
             {
                 using (SqlConnection sqlConnection = GetConnection())
                 {
-                    using (SqlCommand sqlCommand = new SqlCommand("INSERT INTO Users ([Name], Nickname, [Email], ConfirmationCode, Confirmed) VALUES (@name, @nickname, @email, @confirmationCode, 0)", sqlConnection))
+                    using (SqlCommand sqlCommand = new SqlCommand("INSERT INTO Users ([Name], Nickname, [Email], ConfirmationCode, Confirmed, MintChipId) VALUES (@name, @nickname, @email, @confirmationCode, 0, '')", sqlConnection))
                     {
                         AddVarCharParameter("name", userName, sqlCommand);
                         AddVarCharParameter("nickname", nickname, sqlCommand);
