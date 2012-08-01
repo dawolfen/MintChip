@@ -21,9 +21,11 @@ namespace MintChipWebApp
 #endif
             try
             {
-                Response.Write(System.Environment.MachineName);
-                Response.Write(" ");
-                Response.Write(DateTime.Now.ToString());
+                //Response.Write(System.Environment.MachineName);
+                //Response.Write(" ");
+                //Response.Write(DateTime.Now.ToString());
+
+                Response.Write("No news to report - last updated August 1st, 2012.");
             }
             catch
             {
