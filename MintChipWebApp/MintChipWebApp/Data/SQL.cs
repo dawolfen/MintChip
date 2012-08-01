@@ -688,6 +688,27 @@ namespace MintChipWebApp.Data
 
         #endregion
 
+        // temporary for today only!
+        #region GetLastConfirmationCode
+
+        public string GetLastConfirmationCode()
+        {
+            using (SqlConnection sqlConnection = GetConnection())
+            {
+                string sql = @"SELECT ConfirmationCode FROM Users WHERE Id = (SELECT MAX(Id) FROM Users)";
+
+                using (SqlCommand sqlCommand = new SqlCommand(sql, sqlConnection))
+                {
+                    if (sqlConnection.State == ConnectionState.Closed)
+                        sqlConnection.Open();
+
+                    return (string)sqlCommand.ExecuteScalar();
+                }
+            }
+        }
+
+        #endregion
+
         #region AddParameter functions
 
         internal static void AddVarCharParameter(string name, string value, SqlCommand sqlCommand)
