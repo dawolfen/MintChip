@@ -48,9 +48,9 @@ namespace MintChipWebApp
         #region CreateAccount
 
         [WebMethod]
-        public string CreateAccount(string userName, string nickname, string emailAddress)
+        public string CreateAccount(string userName, string nickname, string emailAddress, string mintChipId)
         {
-            SQLLogger.LogInfo(string.Format("Creating account for user '{0}', nickname '{1}' and emailAddress '{2}'.", userName, nickname, emailAddress));
+            SQLLogger.LogInfo(string.Format("Creating account for user '{0}', nickname '{1}', emailAddress '{2}' and mintChipId '{3}'.", userName, nickname, emailAddress, mintChipId));
 
             if (string.IsNullOrEmpty(userName))
                 return "<xml><IsValid>0</IsValid><FailureReason>InvalidUserName</FailureReason></xml>";
@@ -64,7 +64,7 @@ namespace MintChipWebApp
                 return "<xml><IsValid>0</IsValid><FailureReason>DuplicateEmailAddress</FailureReason></xml>";
 
             string code = CreateRandomConfirmationCode();
-            sql.CreateAccount(userName, nickname, emailAddress, code);
+            sql.CreateAccount(userName, nickname, emailAddress, code, mintChipId);
 
             #region Create Email
 

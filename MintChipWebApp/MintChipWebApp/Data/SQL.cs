@@ -51,18 +51,19 @@ namespace MintChipWebApp.Data
 
         #region Create Account
 
-        public void CreateAccount(string userName, string nickname, string emailAddress, string confirmationCode)
+        public void CreateAccount(string userName, string nickname, string emailAddress, string confirmationCode, string mintChipId)
         {
             try
             {
                 using (SqlConnection sqlConnection = GetConnection())
                 {
-                    using (SqlCommand sqlCommand = new SqlCommand("INSERT INTO Users ([Name], Nickname, [Email], ConfirmationCode, Confirmed, MintChipId) VALUES (@name, @nickname, @email, @confirmationCode, 0, '')", sqlConnection))
+                    using (SqlCommand sqlCommand = new SqlCommand("INSERT INTO Users ([Name], Nickname, [Email], ConfirmationCode, Confirmed, MintChipId) VALUES (@name, @nickname, @email, @confirmationCode, 0, @mintChipId)", sqlConnection))
                     {
                         AddVarCharParameter("name", userName, sqlCommand);
                         AddVarCharParameter("nickname", nickname, sqlCommand);
                         AddVarCharParameter("email", emailAddress, sqlCommand);
                         AddVarCharParameter("confirmationCode", confirmationCode, sqlCommand);
+                        AddVarCharParameter("mintChipId", confirmationCode, sqlCommand);
 
                         sqlConnection.Open();
 
