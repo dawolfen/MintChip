@@ -16,9 +16,6 @@ namespace MintChipWebApp
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            SQL sql = new SQL();
-            Response.Write(sql.GetLastConfirmationCode());
-            Response.Write(" ");
 #if DEBUG
             Data.SQL.TestConfirmAccount();
 #endif

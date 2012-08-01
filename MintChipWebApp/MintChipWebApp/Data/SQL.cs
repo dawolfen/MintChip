@@ -610,7 +610,7 @@ namespace MintChipWebApp.Data
                                         -- this will need to be more sophisticated later, in terms of returning a set of pending payments. For now pick one because of time constraints
 
                                         -- temp variables
-                                        DECLARE @transactionId VARCHAR(255) = NULL
+                                        DECLARE @transactionId VARCHAR(MAX) = NULL
                                         -- end temp variables
 
                                         SELECT TOP 1 @billParticipantId = Id, @billId = BillId, @transactionId = TransactionId FROM BillParticipant WHERE Finalized = 1 AND BillId IN (SELECT Id FROM Bill WHERE OwnerId = @userId) AND PaymentTransfered = 0
