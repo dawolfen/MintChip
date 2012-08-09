@@ -56,6 +56,18 @@
     </Content>
     <Content Include="DataService.asmx" />
     <Content Include="Default.aspx" />
+    <Content Include="img\Applications.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="img\Apply.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="img\MintChipBlackberryApi.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="img\Update.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="MintChipBlackBerryApi.cod">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
